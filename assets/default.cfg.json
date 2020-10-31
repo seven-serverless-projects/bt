@@ -1,0 +1,37 @@
+{
+    "user_id": "TBD",
+    "name": "Replace with your name",
+    "email": "Replace with your email address",
+    "service_url": "https://...",
+    "time_categories": [{
+            "id": "TBD",
+            "name": "Sleeping",
+            "color": "08b4ff",
+            "active": true
+        },
+        {
+            "id": "TBD",
+            "name": "Writing",
+            "color": "ff7bee",
+            "active": true
+        },
+        {
+            "id": "TBD",
+            "name": "Gaming",
+            "color": "ffc885",
+            "active": true
+        },
+        {
+            "id": "TBD",
+            "name": "Day Job",
+            "color": "fffbaa",
+            "active": true
+        },
+        {
+            "id": "TBD",
+            "name": "Reading",
+            "color": "abfff7",
+            "active": true
+        }
+    ]
+}
