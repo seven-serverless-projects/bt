@@ -38,7 +38,7 @@ func getConfig() Config {
 		// Create a default configuration
 		defaultConfigFor(configFile)
 		fmt.Println("\nYou have a new default config file at: " + configFile)
-		fmt.Println("\nPlease edit the file to match your desired configuration.\n")
+		fmt.Print("\nPlease edit the file to match your desired configuration.\n\n")
 		os.Exit(0)
 	}
 	// Read the config file
