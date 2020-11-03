@@ -3,7 +3,7 @@
     "name": "Replace with your name",
     "email": "Replace with your email address",
     "service_url": "https://...",
-    "time_categories": [{
+    "activities": [{
             "id": "TBD",
             "name": "Sleeping",
             "color": "08b4ff",

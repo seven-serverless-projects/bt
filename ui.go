@@ -2,19 +2,24 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gdamore/tcell/v2" // https://github.com/gdamore/tcell
 	"github.com/rivo/tview"       // https://github.com/rivo/tview
 )
 
-const bgColor = tcell.ColorDarkBlue
+const (
+	bgColor  = tcell.ColorDarkBlue
+	formatUS = "Monday, November 2, 2020"
+)
 
+// UI - the BubbleTimer terminal user interface
 type UI struct {
 	app           *tview.Application
 	grid          *tview.Grid
 	header        *tview.TextView
 	timeSliceList *tview.TextView
-	categoryList  *tview.TextView
+	activityList  *tview.TextView
 	commandInput  *tview.InputField
 }
 
@@ -25,11 +30,12 @@ func initUI() UI {
 
 	initHeader()
 	initTimeSlices()
-	initCategories()
+	initActivities()
 	initFooter()
 	initGrid()
 
 	if err := ui.app.SetRoot(ui.grid, true).Run(); err != nil {
+		fmt.Println("Unable to initialize the UI!")
 		panic(err)
 	}
 
@@ -37,9 +43,14 @@ func initUI() UI {
 }
 
 func initHeader() {
+	thisDay, err := time.Parse(time.RFC3339, bt.currentDay.date)
+	if err != nil {
+		fmt.Println("Unable to parse the date: " + bt.currentDay.date)
+		panic(err)
+	}
 	ui.header = tview.NewTextView().
 		SetTextAlign(tview.AlignCenter).
-		SetText("Monday, November 2, 2020")
+		SetText(thisDay.Format(formatUS))
 	ui.header.SetBorderPadding(1, 1, 0, 0)
 	ui.header.SetTextColor(tcell.ColorLimeGreen)
 	ui.header.SetBackgroundColor(bgColor)
@@ -52,11 +63,11 @@ func initTimeSlices() {
 	setTimeSliceTextFor(bt.currentDay)
 }
 
-func initCategories() {
-	ui.categoryList = tview.NewTextView()
-	ui.categoryList.SetBorderPadding(0, 0, 1, 1).
+func initActivities() {
+	ui.activityList = tview.NewTextView()
+	ui.activityList.SetBorderPadding(0, 0, 1, 1).
 		SetBackgroundColor(bgColor)
-	setCategoriesFor(bt.currentDay)
+	setActivitiesFor(bt.currentDay)
 }
 
 func initFooter() {
@@ -78,7 +89,7 @@ func initGrid() {
 		SetColumns(0, 0).
 		AddItem(ui.header, 0, 0, 1, 2, 0, 0, false).
 		AddItem(ui.timeSliceList, 1, 0, 1, 1, 0, 0, false).
-		AddItem(ui.categoryList, 1, 1, 1, 1, 0, 0, false).
+		AddItem(ui.activityList, 1, 1, 1, 1, 0, 0, false).
 		AddItem(ui.commandInput, 2, 0, 1, 2, 0, 0, true)
 }
 
@@ -93,8 +104,16 @@ func setTimeSliceTextFor(thisDay Day) {
 	ui.timeSliceList.SetText(timeSliceText)
 }
 
-func setCategoriesFor(thisDay Day) {
-	ui.categoryList.SetText("C1 — Reading\nC2 — Writing\nC3 — Arithmetic")
+func setActivitiesFor(thisDay Day) {
+	activeActivityCount := 1
+	activityText := ""
+	for _, activity := range bt.config.Activities {
+		if activity.Active {
+			activityText += "c" + fmt.Sprint(activeActivityCount) + " — " + activity.Name + "\n"
+			activeActivityCount++
+		}
+	}
+	ui.activityList.SetText(activityText)
 }
 
 // Takes a time slice and returns a human readable string representing the starting and ending time of the time slice.

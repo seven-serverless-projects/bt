@@ -4,14 +4,16 @@ import (
 	"time"
 )
 
+// Day - a single day of 96 (15m) time slices
 type Day struct {
 	date       string        // ISO 8601
 	timeSlices [96]TimeSlice // 0 to 95 for each 15m of a day, 0 = 0:00-0:15, 4 = 1:00-1:15, 95 = 23:45-24:00
 }
 
+// TimeSlice - one unit of time, either uncategorized, or associated with at activity
 type TimeSlice struct {
-	slice          int
-	timeCategoryID string
+	slice      int
+	activityID string
 }
 
 // TODO for a different day than today
@@ -49,4 +51,15 @@ func currentTimeSlicesFor(day Day) []TimeSlice {
 
 	// select and return the time slices from day
 	return day.timeSlices[startingTimeSlice:(startingTimeSlice + 8)]
+}
+
+func activityByID(id string) Activity {
+	var matchingActivity Activity
+	for _, activity := range bt.config.Activities {
+		if activity.ID == id {
+			matchingActivity = activity
+			break
+		}
+	}
+	return matchingActivity
 }

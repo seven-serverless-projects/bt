@@ -10,15 +10,17 @@ import (
 	"github.com/google/uuid"
 )
 
+// Config - user configuration data from local JSON file
 type Config struct {
-	UserID         string `json:"user_id"`
-	Name           string
-	Email          string
-	ServiceURL     string         `json:"service_url"`
-	TimeCategories []TimeCategory `json:"time_categories"`
+	UserID     string `json:"user_id"`
+	Name       string
+	Email      string
+	ServiceURL string     `json:"service_url"`
+	Activities []Activity `json:"activities"`
 }
 
-type TimeCategory struct {
+// Activity - label for the activity a time slice was spent doing
+type Activity struct {
 	ID     string
 	Name   string
 	Color  string
@@ -75,9 +77,9 @@ func defaultConfigFor(configFile string) {
 	}
 	// Replace the user with a new UUID
 	userConf.UserID = uuid.New().String()
-	for i, category := range userConf.TimeCategories {
-		category.ID = uuid.New().String()
-		userConf.TimeCategories[i] = category
+	for i, activity := range userConf.Activities {
+		activity.ID = uuid.New().String()
+		userConf.Activities[i] = activity
 	}
 
 	// Write the user's new config file

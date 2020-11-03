@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// BT - BubbleTimer application
 type BT struct {
 	config     Config
 	currentDay Day
