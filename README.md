@@ -12,11 +12,11 @@ This is an example project from chapter 4 of *Seven Serverless Projects in Seven
 
 ```json
 {
-	"user": "4fb61541-4219-41cb-a3c3-3cd525f4d7ab",
-	"name": "Albert",
+  "user": "4fb61541-4219-41cb-a3c3-3cd525f4d7ab",
+  "name": "Albert",
   "email": "albert.camus@combat.org",
-	"service_url": "URL",
-  "time_categories": [
+  "service_url": "URL",
+  "activities": [
     {
       "id": "25b69838-1899-11eb-93a1-003ee1cbbd65",
       "name": "Sleeping",
@@ -27,7 +27,7 @@ This is an example project from chapter 4 of *Seven Serverless Projects in Seven
       "id": "b8a7a6f8-ce15-42f6-aa05-988e346f7afb",
       "name": "Writing",
       "color": "ff7bee",
-			"active": true
+      "active": true
     },
     {
       "id": "92b0f46f-57ca-4831-9629-2315ccc8885d",
@@ -53,21 +53,21 @@ This is an example project from chapter 4 of *Seven Serverless Projects in Seven
 
 Firestore schema:
 
-```
+```text
 users
-	user-id
-		Document-per-day
-			time-slice-index: time-category-uuid
+  user-id
+    Document-per-day
+      time-slice-index: time-category-uuid
 ```
 
 Firestore example data:
 
-```
+```text
 users
-	sean@snootymonkey.com
-		2020-10-27
-			23: "25b69838-1899-11eb-93a1-003ee1cbbd65"
-			24: "b8a7a6f8-ce15-42f6-aa05-988e346f7afb"
+  sean@snootymonkey.com
+    2020-10-27
+      23: "25b69838-1899-11eb-93a1-003ee1cbbd65"
+      24: "b8a7a6f8-ce15-42f6-aa05-988e346f7afb"
 ```
 
 ## Participation

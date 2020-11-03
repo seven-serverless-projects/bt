@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2" // https://github.com/gdamore/tcell
@@ -12,6 +14,44 @@ const (
 	bgColor  = tcell.ColorDarkBlue
 	formatUS = "Monday, November 2, 2020"
 )
+
+/*
+Regular expression that can parse valid time entries from the user.
+
+t# references the time slices displayed in the UI by their numbered index.
+
+a# references activities displayed in the UI by their numbered index.
+
+One or more time slices, or a range of time slices, are associated with one activity.
+
+Valid Examples:
+t1 a1
+t1a1
+t3, t6 a2
+t3,t6 a2
+t3 t6 a2
+t3t6 a2
+t3t6a2
+t7-t10 a5
+t7-t10a5
+
+Detailed breakdown of the regex string:
+
+^ - the start
+
+(?:t(?P<sliceIndex>[0-9]+),?\\s?)* - a single t# or a comma, space, or non-delimitted sequence of them
+
+| - or this other way of specifiying time
+
+t(?P<range1>[0-9]+)-t(?P<range2>[0-9]+) - a range t#=t#
+
+\s optional white space between time and activity
+
+a(?P<activity>[0-9]+) - activity in the form of a#
+
+$ - the end
+*/
+const timeEntryRegExString = "^((?:t(?P<sliceIndex>[0-9]+),?\\s?)*|t(?P<range1>[0-9]+)-t(?P<range2>[0-9]+))\\s*a(?P<activity>[0-9]+)$"
 
 // UI - the BubbleTimer terminal user interface
 type UI struct {
@@ -24,10 +64,12 @@ type UI struct {
 }
 
 var ui UI
+var timeEntryRegExp *regexp.Regexp
 
 func initUI() UI {
 	ui.app = tview.NewApplication()
 
+	initRegExp()
 	initHeader()
 	initTimeSlices()
 	initActivities()
@@ -40,6 +82,10 @@ func initUI() UI {
 	}
 
 	return ui
+}
+
+func initRegExp() {
+	timeEntryRegExp = regexp.MustCompile(timeEntryRegExString)
 }
 
 func initHeader() {
@@ -109,7 +155,7 @@ func setActivitiesFor(thisDay Day) {
 	activityText := ""
 	for _, activity := range bt.config.Activities {
 		if activity.Active {
-			activityText += "c" + fmt.Sprint(activeActivityCount) + " — " + activity.Name + "\n"
+			activityText += "a" + fmt.Sprint(activeActivityCount) + " — " + activity.Name + "\n"
 			activeActivityCount++
 		}
 	}
@@ -148,12 +194,26 @@ func inputComplete(key tcell.Key) {
 	}
 }
 
+// Parse text input from the user, which is request to quit, or a time entry.
 func parseInput() {
-	input := ui.commandInput.GetText()
-	if input == "q" || input == "quit" || input == "Q" || input == "Quit" {
+	input := strings.ToLower(ui.commandInput.GetText())
+	if input == "q" || input == "quit" {
 		ui.app.Stop()
+	} else if strings.HasPrefix(input, "t") {
+		parseTimeEntry(input)
 	} else {
 		resetInput()
+	}
+}
+
+// The time entry format associates a single activity with a time slice, time slices, or a range of time slices
+func parseTimeEntry(entry string) {
+	match := timeEntryRegExp.FindStringSubmatch(entry)
+	if len(match) == 0 {
+		resetInput() // silly user!
+	} else {
+		resetInput()
+		//ui.commandInput.SetLabel("0: " + match[0] + " 1: " + match[1] + " 2: " + match[2] + " 3: " + match[3] + " 4: " + match[4] + " 5: " + match[5])
 	}
 }
 

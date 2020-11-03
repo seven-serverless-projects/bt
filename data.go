@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+const timeSlicesDisplayed = 12
+
 // Day - a single day of 96 (15m) time slices
 type Day struct {
 	date       string        // ISO 8601
@@ -36,7 +38,7 @@ func currentTimeSlicesFor(day Day) []TimeSlice {
 	thisHourSlices := (nowMinutes / 15) + 1
 
 	// time slices before the top of the hour
-	priorHourSlices := 8 - thisHourSlices
+	priorHourSlices := timeSlicesDisplayed - thisHourSlices
 
 	// time slice index for this hour
 	nowHour := now.Hour()
@@ -45,12 +47,12 @@ func currentTimeSlicesFor(day Day) []TimeSlice {
 	// Adjust for being near the the start and end of the day
 	if startingTimeSlice < 0 {
 		startingTimeSlice = 0
-	} else if startingTimeSlice > 88 {
-		startingTimeSlice = 88
+	} else if startingTimeSlice > (96 - timeSlicesDisplayed) {
+		startingTimeSlice = 96 - timeSlicesDisplayed
 	}
 
 	// select and return the time slices from day
-	return day.timeSlices[startingTimeSlice:(startingTimeSlice + 8)]
+	return day.timeSlices[startingTimeSlice:(startingTimeSlice + timeSlicesDisplayed)]
 }
 
 func activityByID(id string) Activity {
