@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -119,7 +120,7 @@ func initActivities() {
 func initFooter() {
 	ui.commandInput = tview.NewInputField().
 		SetLabel("Command: ").
-		SetFieldWidth(10).
+		SetFieldWidth(25).
 		SetFieldBackgroundColor(bgColor).
 		SetFieldTextColor(tcell.ColorYellow).
 		SetLabelColor(tcell.ColorGreen).
@@ -207,16 +208,27 @@ func parseInput() {
 }
 
 // The time entry format associates a single activity with a time slice, time slices, or a range of time slices
-func parseTimeEntry(entry string) {
+func parseTimeEntry(entry string) ([]int, [2]int, int, bool) {
+	timeSlices := []int{}
+	var timeRange [2]int
+	var activity int
+	err := false
 	match := timeEntryRegExp.FindStringSubmatch(entry)
-	if len(match) == 0 {
+	if len(match) < 6 {
+		err = true
 		resetInput() // silly user!
 	} else {
 		resetInput()
+		timeRange[0], _ = strconv.Atoi(match[3])
+		timeRange[1], _ = strconv.Atoi(match[4])
+		activity, _ = strconv.Atoi(match[5])
 		//ui.commandInput.SetLabel("0: " + match[0] + " 1: " + match[1] + " 2: " + match[2] + " 3: " + match[3] + " 4: " + match[4] + " 5: " + match[5])
 	}
+	return timeSlices, timeRange, activity, err
 }
 
 func resetInput() {
-	ui.commandInput.SetText("")
+	if ui.commandInput != nil {
+		ui.commandInput.SetText("")
+	}
 }

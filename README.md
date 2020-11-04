@@ -70,6 +70,14 @@ users
       24: "b8a7a6f8-ce15-42f6-aa05-988e346f7afb"
 ```
 
+## Testing
+
+To run the unit tests, simply execute:
+
+```console
+go test
+```
+
 ## Participation
 
 Please note that this project is released with a [Contributor Code of Conduct](https://github.com/seven-serverless-projects/bt/blob/mainline/CODE-OF-CONDUCT.md). By participating in this project you agree to abide by its terms.
