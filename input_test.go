@@ -25,6 +25,10 @@ func TestParseTimeEntry(t *testing.T) {
 		testCase{"t a1", []int{}, [2]int{}, 0, true},
 		testCase{"ta1", []int{}, [2]int{}, 0, true},
 		testCase{"ta", []int{}, [2]int{}, 0, true},
+		testCase{"t1-t1 a1", []int{}, [2]int{}, 0, true},
+		testCase{"t0-t1 a1", []int{}, [2]int{}, 0, true},
+		testCase{"t2-t1 a1", []int{}, [2]int{}, 0, true},
+		testCase{"t1-t" + fmt.Sprint(timeSlicesDisplayed+1) + " a1", []int{}, [2]int{}, 0, true},
 		// success cases
 		testCase{"t1 a1", []int{1}, [2]int{}, 1, false},
 		testCase{"t1a1", []int{1}, [2]int{}, 1, false},

@@ -20,6 +20,7 @@ type TimeSlice struct {
 
 // TODO for a different day than today
 // TODO retrieve from Firestore rather than blank
+//
 func retrieveData() Day {
 	day := Day{}
 	day.date = time.Now().Format(time.RFC3339)
@@ -30,6 +31,7 @@ func retrieveData() Day {
 	return day
 }
 
+//
 func currentTimeSlicesFor(day Day) []TimeSlice {
 	now := time.Now()
 
@@ -55,6 +57,7 @@ func currentTimeSlicesFor(day Day) []TimeSlice {
 	return day.timeSlices[startingTimeSlice:(startingTimeSlice + timeSlicesDisplayed)]
 }
 
+//
 func activityByID(id string) Activity {
 	var matchingActivity Activity
 	for _, activity := range bt.config.Activities {
@@ -64,4 +67,15 @@ func activityByID(id string) Activity {
 		}
 	}
 	return matchingActivity
+}
+
+//
+func activeActivities() []Activity {
+	activeActivities := []Activity{}
+	for _, activity := range bt.config.Activities {
+		if activity.Active {
+			activeActivities = append(activeActivities, activity)
+		}
+	}
+	return activeActivities
 }

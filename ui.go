@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"regexp"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2" // https://github.com/gdamore/tcell
@@ -54,6 +52,9 @@ $ - the end
 */
 const timeEntryRegExString = "^((?:t(?P<sliceIndex>[0-9]+),?\\s?)*|t(?P<range1>[0-9]+)-t(?P<range2>[0-9]+))\\s*a(?P<activity>[0-9]+)$"
 
+// Subset of the full regex, with just a single t# or a comma, space, or non-delimitted sequence of them
+const timeSlicesRegExString = "^(t([0-9])+,?\\s?)+$"
+
 // UI - the BubbleTimer terminal user interface
 type UI struct {
 	app           *tview.Application
@@ -65,7 +66,7 @@ type UI struct {
 }
 
 var ui UI
-var timeEntryRegExp *regexp.Regexp
+var timeEntryRegExp, timeSlicesRegExp *regexp.Regexp
 
 func initUI() UI {
 	ui.app = tview.NewApplication()
@@ -87,6 +88,7 @@ func initUI() UI {
 
 func initRegExp() {
 	timeEntryRegExp = regexp.MustCompile(timeEntryRegExString)
+	timeSlicesRegExp = regexp.MustCompile(timeSlicesRegExString)
 }
 
 func initHeader() {
@@ -140,13 +142,26 @@ func initGrid() {
 		AddItem(ui.commandInput, 2, 0, 1, 2, 0, 0, true)
 }
 
+func resetInput() {
+	if ui.commandInput != nil {
+		ui.commandInput.SetText("")
+	}
+}
+
 func setTimeSliceTextFor(thisDay Day) {
 	currentTimeSlices := currentTimeSlicesFor(thisDay)
 	timeSliceText := ""
 	for i := range currentTimeSlices {
 		k := len(currentTimeSlices) - i - 1 // backwards iteration
 		timeSlice := currentTimeSlices[k]
-		timeSliceText += "t" + fmt.Sprint(i+1) + " — " + timeDisplayFor(timeSlice) + "\n"
+		timeSliceText += "t" + fmt.Sprint(i+1) + " — " + timeDisplayFor(timeSlice)
+		if timeSlice.activityID != "" {
+			activity := activityByID(timeSlice.activityID)
+			if activity.Name != "" {
+				timeSliceText += " — " + activity.Name
+			}
+		}
+		timeSliceText += "\n"
 	}
 	ui.timeSliceList.SetText(timeSliceText)
 }
@@ -154,11 +169,9 @@ func setTimeSliceTextFor(thisDay Day) {
 func setActivitiesFor(thisDay Day) {
 	activeActivityCount := 1
 	activityText := ""
-	for _, activity := range bt.config.Activities {
-		if activity.Active {
-			activityText += "a" + fmt.Sprint(activeActivityCount) + " — " + activity.Name + "\n"
-			activeActivityCount++
-		}
+	for _, activity := range activeActivities() {
+		activityText += "a" + fmt.Sprint(activeActivityCount) + " — " + activity.Name + "\n"
+		activeActivityCount++
 	}
 	ui.activityList.SetText(activityText)
 }
@@ -195,40 +208,12 @@ func inputComplete(key tcell.Key) {
 	}
 }
 
-// Parse text input from the user, which is request to quit, or a time entry.
-func parseInput() {
-	input := strings.ToLower(ui.commandInput.GetText())
-	if input == "q" || input == "quit" {
-		ui.app.Stop()
-	} else if strings.HasPrefix(input, "t") {
-		parseTimeEntry(input)
-	} else {
-		resetInput()
-	}
-}
+func assignTime(timeSlices []int, activity int) {
 
-// The time entry format associates a single activity with a time slice, time slices, or a range of time slices
-func parseTimeEntry(entry string) ([]int, [2]int, int, bool) {
-	timeSlices := []int{}
-	var timeRange [2]int
-	var activity int
-	err := false
-	match := timeEntryRegExp.FindStringSubmatch(entry)
-	if len(match) < 6 {
-		err = true
-		resetInput() // silly user!
-	} else {
-		resetInput()
-		timeRange[0], _ = strconv.Atoi(match[3])
-		timeRange[1], _ = strconv.Atoi(match[4])
-		activity, _ = strconv.Atoi(match[5])
-		//ui.commandInput.SetLabel("0: " + match[0] + " 1: " + match[1] + " 2: " + match[2] + " 3: " + match[3] + " 4: " + match[4] + " 5: " + match[5])
-	}
-	return timeSlices, timeRange, activity, err
-}
+	// Get the index offset of the current block of time slices
 
-func resetInput() {
-	if ui.commandInput != nil {
-		ui.commandInput.SetText("")
-	}
+	// update the day's timeslices with the activity
+
+	// refresh the timeslices display in the ui
+	initTimeSlices()
 }
