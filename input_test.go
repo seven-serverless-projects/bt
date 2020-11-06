@@ -19,26 +19,28 @@ func TestParseTimeEntry(t *testing.T) {
 
 	testCases := []testCase{
 		// failure cases
-		testCase{"t1", []int{}, [2]int{}, 0, true},
-		testCase{"t1 a", []int{}, [2]int{}, 0, true},
-		testCase{"t1a", []int{}, [2]int{}, 0, true},
-		testCase{"t a1", []int{}, [2]int{}, 0, true},
-		testCase{"ta1", []int{}, [2]int{}, 0, true},
-		testCase{"ta", []int{}, [2]int{}, 0, true},
-		testCase{"t1-t1 a1", []int{}, [2]int{}, 0, true},
-		testCase{"t0-t1 a1", []int{}, [2]int{}, 0, true},
-		testCase{"t2-t1 a1", []int{}, [2]int{}, 0, true},
-		testCase{"t1-t" + fmt.Sprint(timeSlicesDisplayed+1) + " a1", []int{}, [2]int{}, 0, true},
+		{"t1", []int{}, [2]int{}, 0, true},
+		{"t1 a", []int{}, [2]int{}, 0, true},
+		{"t1a", []int{}, [2]int{}, 0, true},
+		{"t a1", []int{}, [2]int{}, 0, true},
+		{"ta1", []int{}, [2]int{}, 0, true},
+		{"ta", []int{}, [2]int{}, 0, true},
+		{"t1-t1 a1", []int{}, [2]int{}, 0, true},
+		{"t0-t1 a1", []int{}, [2]int{}, 0, true},
+		{"t2-t1 a1", []int{}, [2]int{}, 0, true},
+		{"t1-t" + fmt.Sprint(timeSlicesDisplayed+1) + " a1", []int{}, [2]int{}, 0, true},
 		// success cases
-		testCase{"t1 a1", []int{1}, [2]int{}, 1, false},
-		testCase{"t1a1", []int{1}, [2]int{}, 1, false},
-		testCase{"t3, t6 a2", []int{3, 6}, [2]int{}, 2, false},
-		testCase{"t3,t6 a2", []int{3, 6}, [2]int{}, 2, false},
-		testCase{"t3 t6 a2", []int{3, 6}, [2]int{}, 2, false},
-		testCase{"t3t6 a2", []int{3, 6}, [2]int{}, 2, false},
-		testCase{"t3t6a2", []int{3, 6}, [2]int{}, 2, false},
-		testCase{"t7-t10 a5", []int{}, [2]int{7, 10}, 5, false},
-		testCase{"t7-t10a5", []int{}, [2]int{7, 10}, 5, false}}
+		{"t1 a1", []int{1}, [2]int{}, 1, false},
+		{"t1a1", []int{1}, [2]int{}, 1, false},
+		{"t3, t6 a2", []int{3, 6}, [2]int{}, 2, false},
+		{"t3,t6 a2", []int{3, 6}, [2]int{}, 2, false},
+		{"t3 t6 a2", []int{3, 6}, [2]int{}, 2, false},
+		{"t3t6 a2", []int{3, 6}, [2]int{}, 2, false},
+		{"t3t6a2", []int{3, 6}, [2]int{}, 2, false},
+		{"t7-t10 a5", []int{}, [2]int{7, 10}, 5, false},
+		{"t7-10 a5", []int{}, [2]int{7, 10}, 5, false},
+		{"t7-t10a5", []int{}, [2]int{7, 10}, 5, false},
+		{"t7-10a5", []int{}, [2]int{7, 10}, 5, false}}
 	t.Log("Test: parsing user time entries...")
 	initRegExp()
 	for i, testCase := range testCases {

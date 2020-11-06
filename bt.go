@@ -18,6 +18,7 @@ func main() {
 	bt.config = getConfig()
 	bt.currentDay = retrieveData()
 	bt.ui = initUI()
+	startUI() // Blocking
 	shutdown()
 }
 

@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	bgColor  = tcell.ColorDarkBlue
-	formatUS = "Monday, November 2, 2020"
+	timeSlicesDisplayed = 12
+	bgColor             = tcell.ColorDarkBlue
+	formatUS            = "Monday, November 2, 2020"
 )
 
 /*
@@ -32,7 +33,9 @@ t3 t6 a2
 t3t6 a2
 t3t6a2
 t7-t10 a5
+t7-10 a5
 t7-t10a5
+t7-10a5
 
 Detailed breakdown of the regex string:
 
@@ -50,19 +53,20 @@ a(?P<activity>[0-9]+) - activity in the form of a#
 
 $ - the end
 */
-const timeEntryRegExString = "^((?:t(?P<sliceIndex>[0-9]+),?\\s?)*|t(?P<range1>[0-9]+)-t(?P<range2>[0-9]+))\\s*a(?P<activity>[0-9]+)$"
+const timeEntryRegExString = "^((?:t(?P<sliceIndex>[0-9]+),?\\s?)*|t(?P<range1>[0-9]+)-t?(?P<range2>[0-9]+))\\s*a(?P<activity>[0-9]+)$"
 
-// Subset of the full regex, with just a single t# or a comma, space, or non-delimitted sequence of them
+// Subset of the full parsing regex, with just a single t# or a comma, space, or non-delimitted sequence of them
 const timeSlicesRegExString = "^(t([0-9])+,?\\s?)+$"
 
 // UI - the BubbleTimer terminal user interface
 type UI struct {
-	app           *tview.Application
-	grid          *tview.Grid
-	header        *tview.TextView
-	timeSliceList *tview.TextView
-	activityList  *tview.TextView
-	commandInput  *tview.InputField
+	app               *tview.Application
+	grid              *tview.Grid
+	header            *tview.TextView
+	timeSliceList     *tview.TextView
+	activityList      *tview.TextView
+	commandInput      *tview.InputField
+	currentTimeSlices []TimeSlice
 }
 
 var ui UI
@@ -78,12 +82,13 @@ func initUI() UI {
 	initFooter()
 	initGrid()
 
-	if err := ui.app.SetRoot(ui.grid, true).Run(); err != nil {
-		fmt.Println("Unable to initialize the UI!")
+	return ui
+}
+
+func startUI() {
+	if err := ui.app.Run(); err != nil {
 		panic(err)
 	}
-
-	return ui
 }
 
 func initRegExp() {
@@ -109,14 +114,14 @@ func initTimeSlices() {
 	ui.timeSliceList = tview.NewTextView()
 	ui.timeSliceList.SetBorderPadding(0, 0, 1, 1).
 		SetBackgroundColor(bgColor)
-	setTimeSliceTextFor(bt.currentDay)
+	ui.timeSliceList.SetText(timeSliceTextFor(bt.currentDay))
 }
 
 func initActivities() {
 	ui.activityList = tview.NewTextView()
 	ui.activityList.SetBorderPadding(0, 0, 1, 1).
 		SetBackgroundColor(bgColor)
-	setActivitiesFor(bt.currentDay)
+	ui.activityList.SetText(activitiesFor(bt.currentDay))
 }
 
 func initFooter() {
@@ -140,6 +145,8 @@ func initGrid() {
 		AddItem(ui.timeSliceList, 1, 0, 1, 1, 0, 0, false).
 		AddItem(ui.activityList, 1, 1, 1, 1, 0, 0, false).
 		AddItem(ui.commandInput, 2, 0, 1, 2, 0, 0, true)
+	ui.app.SetRoot(ui.grid, true)
+	ui.app.SetFocus(ui.commandInput)
 }
 
 func resetInput() {
@@ -148,12 +155,12 @@ func resetInput() {
 	}
 }
 
-func setTimeSliceTextFor(thisDay Day) {
-	currentTimeSlices := currentTimeSlicesFor(thisDay)
+func timeSliceTextFor(thisDay Day) string {
+	ui.currentTimeSlices = currentTimeSlicesFor(thisDay)
 	timeSliceText := ""
-	for i := range currentTimeSlices {
-		k := len(currentTimeSlices) - i - 1 // backwards iteration
-		timeSlice := currentTimeSlices[k]
+	for i := range ui.currentTimeSlices {
+		k := len(ui.currentTimeSlices) - i - 1 // backwards iteration
+		timeSlice := ui.currentTimeSlices[k]
 		timeSliceText += "t" + fmt.Sprint(i+1) + " — " + timeDisplayFor(timeSlice)
 		if timeSlice.activityID != "" {
 			activity := activityByID(timeSlice.activityID)
@@ -163,17 +170,17 @@ func setTimeSliceTextFor(thisDay Day) {
 		}
 		timeSliceText += "\n"
 	}
-	ui.timeSliceList.SetText(timeSliceText)
+	return timeSliceText
 }
 
-func setActivitiesFor(thisDay Day) {
+func activitiesFor(thisDay Day) string {
 	activeActivityCount := 1
 	activityText := ""
 	for _, activity := range activeActivities() {
 		activityText += "a" + fmt.Sprint(activeActivityCount) + " — " + activity.Name + "\n"
 		activeActivityCount++
 	}
-	ui.activityList.SetText(activityText)
+	return activityText
 }
 
 // Takes a time slice and returns a human readable string representing the starting and ending time of the time slice.
@@ -208,12 +215,22 @@ func inputComplete(key tcell.Key) {
 	}
 }
 
-func assignTime(timeSlices []int, activity int) {
+func assignTime(timeSliceIndexes []int, activityIndex int) {
 
-	// Get the index offset of the current block of time slices
+	// Get the activity
+	activity := activeActivities()[activityIndex-1]
 
 	// update the day's timeslices with the activity
+	for _, timeSliceUIIndex := range timeSliceIndexes {
+		timeSliceIndex := timeSlicesDisplayed - timeSliceUIIndex // reversed
+		timeSlice := ui.currentTimeSlices[timeSliceIndex]
+		timeSlice.activityID = activity.ID // set the activity
+		// Replace the time slice in the current day's data
+		timeSlices := bt.currentDay.timeSlices
+		timeSlices[timeSlice.slice] = timeSlice
+		bt.currentDay.timeSlices = timeSlices
+	}
 
 	// refresh the timeslices display in the ui
-	initTimeSlices()
+	ui.timeSliceList.SetText(timeSliceTextFor(bt.currentDay))
 }

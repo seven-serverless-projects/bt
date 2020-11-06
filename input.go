@@ -34,7 +34,9 @@ func parseTimeEntry(entry string) ([]int, [2]int, int, bool) {
 	var activity int
 	err := false
 	matches := timeEntryRegExp.FindStringSubmatch(entry)
-	if len(matches) < 6 || !validRange(matches[3], matches[4]) {
+	if len(matches) < 6 ||
+		!validRange(matches[3], matches[4]) ||
+		!validActivity(matches[5]) {
 		err = true // silly user!
 	} else {
 		timeSlices = parseTimeSlices(matches[1])
@@ -78,6 +80,16 @@ func validRange(startString string, endString string) bool {
 			end > timeSlicesDisplayed {
 			valid = false
 		}
+	}
+	return valid
+}
+
+// Return true if the string represents the index of a valid activity from the UI
+func validActivity(activity string) bool {
+	valid := true
+	index, _ := strconv.Atoi(activity) // safe due to the regexes
+	if index < 1 || index > len(activeActivities()) {
+		valid = false
 	}
 	return valid
 }

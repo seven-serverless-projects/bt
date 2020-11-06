@@ -4,8 +4,6 @@ import (
 	"time"
 )
 
-const timeSlicesDisplayed = 12
-
 // Day - a single day of 96 (15m) time slices
 type Day struct {
 	date       string        // ISO 8601

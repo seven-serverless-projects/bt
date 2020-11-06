@@ -27,6 +27,7 @@ type Activity struct {
 	Active bool
 }
 
+// Get the configuration data from the current user's configuration file
 func getConfig() Config {
 	// Get the current user
 	usr, err := user.Current()
@@ -60,6 +61,7 @@ func getConfig() Config {
 	return conf
 }
 
+// Write a default configuration file to the specified file name from the default config file "template"
 func defaultConfigFor(configFile string) {
 	// Read the default config file
 	// TODO what happens to this asset file when it's packaged up for usage?
@@ -75,8 +77,11 @@ func defaultConfigFor(configFile string) {
 		fmt.Println("Unable to parse the default config file asset.")
 		panic(err)
 	}
-	// Replace the user with a new UUID
+
+	// Replace the user ID with a new UUID
 	userConf.UserID = uuid.New().String()
+
+	// Replace each activity's ID with a new UUID
 	for i, activity := range userConf.Activities {
 		activity.ID = uuid.New().String()
 		userConf.Activities[i] = activity

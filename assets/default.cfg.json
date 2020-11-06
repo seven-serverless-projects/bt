@@ -11,6 +11,12 @@
         },
         {
             "id": "TBD",
+            "name": "Reading",
+            "color": "abfff7",
+            "active": true
+        },
+        {
+            "id": "TBD",
             "name": "Writing",
             "color": "ff7bee",
             "active": true
@@ -25,12 +31,6 @@
             "id": "TBD",
             "name": "Day Job",
             "color": "fffbaa",
-            "active": true
-        },
-        {
-            "id": "TBD",
-            "name": "Reading",
-            "color": "abfff7",
             "active": true
         }
     ]
