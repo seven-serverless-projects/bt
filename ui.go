@@ -159,8 +159,7 @@ func timeSliceTextFor(thisDay Day) string {
 	ui.currentTimeSlices = currentTimeSlicesFor(thisDay)
 	timeSliceText := ""
 	for i := range ui.currentTimeSlices {
-		k := len(ui.currentTimeSlices) - i - 1 // backwards iteration
-		timeSlice := ui.currentTimeSlices[k]
+		timeSlice := ui.currentTimeSlices[i]
 		timeSliceText += "t" + fmt.Sprint(i+1) + " — " + timeDisplayFor(timeSlice)
 		if timeSlice.activityID != "" {
 			activity := activityByID(timeSlice.activityID)
@@ -168,7 +167,7 @@ func timeSliceTextFor(thisDay Day) string {
 				timeSliceText += " — " + activity.Name
 			}
 		}
-		timeSliceText += "\n"
+		timeSliceText += "\n\n"
 	}
 	return timeSliceText
 }
