@@ -12,7 +12,7 @@ import (
 const (
 	timeSlicesDisplayed = 12
 	bgColor             = tcell.ColorDarkBlue
-	formatUS            = "Monday, November 2, 2020"
+	formatUS            = "Monday, January 2, 2006"
 )
 
 /*
@@ -97,7 +97,7 @@ func initRegExp() {
 }
 
 func initHeader() {
-	thisDay, err := time.Parse(time.RFC3339, bt.currentDay.date)
+	thisDay, err := time.Parse(dateFormat, bt.currentDay.date)
 	if err != nil {
 		fmt.Println("Unable to parse the date: " + bt.currentDay.date)
 		panic(err)

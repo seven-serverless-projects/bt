@@ -2,7 +2,7 @@
     "user_id": "TBD",
     "name": "Replace with your name",
     "email": "Replace with your email address",
-    "service_url": "https://...",
+    "project_number": "Replace with the Project number for your Google Cloud project",
     "activities": [{
             "id": "TBD",
             "name": "Sleeping",

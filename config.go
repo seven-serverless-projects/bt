@@ -12,19 +12,19 @@ import (
 
 // Config - user configuration data from local JSON file
 type Config struct {
-	UserID     string `json:"user_id"`
-	Name       string
-	Email      string
-	ServiceURL string     `json:"service_url"`
-	Activities []Activity `json:"activities"`
+	UserID        string     `json:"user_id"`
+	Name          string     `json:"name"`
+	Email         string     `json:"email"`
+	ProjectNumber string     `json:"project_number"`
+	Activities    []Activity `json:"activities"`
 }
 
 // Activity - label for the activity a time slice was spent doing
 type Activity struct {
-	ID     string
-	Name   string
-	Color  string
-	Active bool
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Color  string `json:"color"`
+	Active bool   `json:"active"`
 }
 
 // Get the configuration data from the current user's configuration file

@@ -1,8 +1,15 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"time"
+
+	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go" // https://godoc.org/firebase.google.com/go
 )
+
+const dateFormat = "2006-01-02"
 
 // Day - a single day of 96 (15m) time slices
 type Day struct {
@@ -16,12 +23,29 @@ type TimeSlice struct {
 	activityID string
 }
 
+func firebaseConnect() (*firebase.App, *firestore.Client) {
+	ctx := context.Background()
+	conf := &firebase.Config{ProjectID: bt.config.ProjectNumber}
+	app, err := firebase.NewApp(ctx, conf)
+	if err != nil {
+		fmt.Println("Unable to initialize Firebase.")
+		panic(err)
+	}
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		fmt.Println("Unable to connect to Firestore.")
+		panic(err)
+	}
+	defer client.Close()
+	return app, client
+}
+
 // TODO for a different day than today
 // TODO retrieve from Firestore rather than blank
 //
 func retrieveData() Day {
 	day := Day{}
-	day.date = time.Now().Format(time.RFC3339)
+	day.date = time.Now().Format(dateFormat)
 	for i, slice := range day.timeSlices {
 		slice.slice = i
 		day.timeSlices[i] = slice
