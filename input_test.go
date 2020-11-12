@@ -17,6 +17,10 @@ func TestParseTimeEntry(t *testing.T) {
 		err        bool
 	}
 
+	// "Stub" activeActivites func to return 5 (blank) activities
+	active := Activity{"", "", "", true}
+	bt.config.Activities = []Activity{active, active, active, active, active}
+
 	testCases := []testCase{
 		// failure cases
 		{"t1", []int{}, [2]int{}, 0, true},
