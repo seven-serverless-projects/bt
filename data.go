@@ -122,11 +122,11 @@ func persist() (bool, string) {
 }
 
 //
-func sparseTimeSliceActivityMap(timeSlices []TimeSlice) map[string]string {
-	timeSliceMap := make(map[string]string)
+func sparseTimeSliceActivityMap(timeSlices []TimeSlice) map[string]map[string]string {
+	timeSliceMap := make(map[string]map[string]string)
 	for i := range timeSlices {
 		if timeSlices[i].activityID != "" {
-			timeSliceMap[fmt.Sprint(i)] = timeSlices[i].activityID
+			timeSliceMap[fmt.Sprint(i)] = map[string]string{"activity_id": timeSlices[i].activityID}
 		}
 	}
 	return timeSliceMap
