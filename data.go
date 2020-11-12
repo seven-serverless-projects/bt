@@ -23,6 +23,7 @@ type TimeSlice struct {
 	activityID string
 }
 
+// Return a Firestore client that's connected to the app and ready to use
 func firebaseConnect() (*firebase.App, context.Context, *firestore.Client) {
 	ctx := context.Background()
 	conf := &firebase.Config{ProjectID: bt.config.ProjectID}
@@ -52,7 +53,10 @@ func retrieveData() Day {
 	return day
 }
 
-//
+// Return the configured number of time slices for the specified day,
+// starting at the current time and working backwards in time (unless
+// that takes us to midnight, in which case, use midnight as the earliest
+// time slice).
 func currentTimeSlicesFor(day Day) []TimeSlice {
 	now := time.Now()
 
@@ -78,7 +82,8 @@ func currentTimeSlicesFor(day Day) []TimeSlice {
 	return day.timeSlices[startingTimeSlice:(startingTimeSlice + timeSlicesDisplayed)]
 }
 
-//
+// Given the ID of an activity, return the struct for the activity, returns
+// nil if there's no match (not expected)
 func activityByID(id string) Activity {
 	var matchingActivity Activity
 	for _, activity := range bt.config.Activities {
@@ -90,7 +95,7 @@ func activityByID(id string) Activity {
 	return matchingActivity
 }
 
-//
+// Return an array of only the activities from the config that are active
 func activeActivities() []Activity {
 	activeActivities := []Activity{}
 	for _, activity := range bt.config.Activities {
@@ -101,7 +106,7 @@ func activeActivities() []Activity {
 	return activeActivities
 }
 
-//
+// Persist the timeslices for the current day being shown in the UI
 func persist() (bool, string) {
 	success := true
 	errorMessage := ""
@@ -121,7 +126,8 @@ func persist() (bool, string) {
 	return success, errorMessage
 }
 
-//
+// Given an array of all the timeslices for a day, create a map of just the timeslices
+// with an assigned activity ID, using the timeslice index as the key
 func sparseTimeSliceActivityMap(timeSlices []TimeSlice) map[string]map[string]string {
 	timeSliceMap := make(map[string]map[string]string)
 	for i := range timeSlices {
