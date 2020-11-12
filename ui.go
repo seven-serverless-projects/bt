@@ -155,6 +155,7 @@ func resetInput() {
 	}
 }
 
+// Return a string suitable for use in the UI with a return delimitted entry for each timeslice we are displaying
 func timeSliceTextFor(thisDay Day) string {
 	ui.currentTimeSlices = currentTimeSlicesFor(thisDay)
 	timeSliceText := ""
@@ -172,6 +173,8 @@ func timeSliceTextFor(thisDay Day) string {
 	return timeSliceText
 }
 
+// Return a string suitable for use in the UI with a return delimitted entry for each activity we are displaying
+// TODO Right now this just uses active activities, but the specified day may have older, inactive activities as well
 func activitiesFor(thisDay Day) string {
 	activeActivityCount := 1
 	activityText := ""
@@ -206,6 +209,7 @@ func timeDisplayFor(timeSlice TimeSlice) string {
 	return fmt.Sprintf("%d:%s - %d:%s %s", startHour, startMinuteString, endHour, endMinuteString, "")
 }
 
+// The user finished their input, if they finished it with enter, attempt to parse it, otherwise reset the input
 func inputComplete(key tcell.Key) {
 	if key == tcell.KeyEnter {
 		parseInput()
@@ -214,6 +218,7 @@ func inputComplete(key tcell.Key) {
 	}
 }
 
+// Assign the specified activity to the specified time slices and persist the update
 func assignTime(timeSliceIndexes []int, activityIndex int) {
 
 	// Get the activity
