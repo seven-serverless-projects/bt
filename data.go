@@ -23,21 +23,20 @@ type TimeSlice struct {
 	activityID string
 }
 
-func firebaseConnect() (*firebase.App, *firestore.Client) {
+func firebaseConnect() (*firebase.App, context.Context, *firestore.Client) {
 	ctx := context.Background()
-	conf := &firebase.Config{ProjectID: bt.config.ProjectNumber}
+	conf := &firebase.Config{ProjectID: bt.config.ProjectID}
 	app, err := firebase.NewApp(ctx, conf)
 	if err != nil {
-		fmt.Println("Unable to initialize Firebase.")
+		fmt.Println("\nUnable to initialize Firebase.")
 		panic(err)
 	}
 	client, err := app.Firestore(ctx)
 	if err != nil {
-		fmt.Println("Unable to connect to Firestore.")
+		fmt.Println("\nUnable to connect to Firestore.")
 		panic(err)
 	}
-	defer client.Close()
-	return app, client
+	return app, ctx, client
 }
 
 // TODO for a different day than today
@@ -100,4 +99,35 @@ func activeActivities() []Activity {
 		}
 	}
 	return activeActivities
+}
+
+//
+func persist() (bool, string) {
+	success := true
+	errorMessage := ""
+
+	_, err := bt.firestoreClient.
+		Collection("users").
+		Doc(bt.config.UserID).
+		Collection("days").
+		Doc(bt.currentDay.date).
+		Set(bt.firebaseContext, sparseTimeSliceActivityMap(bt.currentDay.timeSlices[:]))
+
+	if err != nil {
+		success = false
+		errorMessage = err.Error()
+		fmt.Printf("Firestore write - Error: %s", errorMessage)
+	}
+	return success, errorMessage
+}
+
+//
+func sparseTimeSliceActivityMap(timeSlices []TimeSlice) map[string]string {
+	timeSliceMap := make(map[string]string)
+	for i := range timeSlices {
+		if timeSlices[i].activityID != "" {
+			timeSliceMap[fmt.Sprint(i)] = timeSlices[i].activityID
+		}
+	}
+	return timeSliceMap
 }

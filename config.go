@@ -12,11 +12,11 @@ import (
 
 // Config - user configuration data from local JSON file
 type Config struct {
-	UserID        string     `json:"user_id"`
-	Name          string     `json:"name"`
-	Email         string     `json:"email"`
-	ProjectNumber string     `json:"project_number"`
-	Activities    []Activity `json:"activities"`
+	UserID     string     `json:"user_id"`
+	Name       string     `json:"name"`
+	Email      string     `json:"email"`
+	ProjectID  string     `json:"project_id"`
+	Activities []Activity `json:"activities"`
 }
 
 // Activity - label for the activity a time slice was spent doing

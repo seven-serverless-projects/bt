@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"cloud.google.com/go/firestore"
@@ -13,6 +14,7 @@ type BT struct {
 	currentDay      Day
 	ui              UI
 	firebaseApp     *firebase.App
+	firebaseContext context.Context
 	firestoreClient *firestore.Client
 }
 
@@ -20,7 +22,7 @@ var bt BT
 
 func main() {
 	bt.config = getConfig()
-	bt.firebaseApp, bt.firestoreClient = firebaseConnect()
+	bt.firebaseApp, bt.firebaseContext, bt.firestoreClient = firebaseConnect()
 	bt.currentDay = retrieveData()
 	bt.ui = initUI()
 	startUI() // Blocking
@@ -28,5 +30,6 @@ func main() {
 }
 
 func shutdown() {
+	bt.firestoreClient.Close()
 	fmt.Println("Come back soon!")
 }

@@ -2,7 +2,7 @@
     "user_id": "TBD",
     "name": "Replace with your name",
     "email": "Replace with your email address",
-    "project_number": "Replace with the Project number for your Google Cloud project",
+    "project_id": "Replace with the Project ID for your Firebase project",
     "activities": [{
             "id": "TBD",
             "name": "Sleeping",

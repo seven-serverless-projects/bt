@@ -220,9 +220,8 @@ func assignTime(timeSliceIndexes []int, activityIndex int) {
 	activity := activeActivities()[activityIndex-1]
 
 	// update the day's timeslices with the activity
-	for _, timeSliceUIIndex := range timeSliceIndexes {
-		timeSliceIndex := timeSlicesDisplayed - timeSliceUIIndex // reversed
-		timeSlice := ui.currentTimeSlices[timeSliceIndex]
+	for _, timeSliceIndex := range timeSliceIndexes {
+		timeSlice := ui.currentTimeSlices[timeSliceIndex-1]
 		timeSlice.activityID = activity.ID // set the activity
 		// Replace the time slice in the current day's data
 		timeSlices := bt.currentDay.timeSlices
@@ -232,4 +231,9 @@ func assignTime(timeSliceIndexes []int, activityIndex int) {
 
 	// refresh the timeslices display in the ui
 	ui.timeSliceList.SetText(timeSliceTextFor(bt.currentDay))
+
+	// persist the updated timeslices
+	// TODO status message
+	persist()
+	// TODO status message
 }
