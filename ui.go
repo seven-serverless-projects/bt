@@ -179,7 +179,7 @@ func activitiesFor(thisDay Day) string {
 	activeActivityCount := 1
 	activityText := ""
 	for _, activity := range activeActivities() {
-		activityText += "a" + fmt.Sprint(activeActivityCount) + " — " + activity.Name + "\n"
+		activityText += "a" + fmt.Sprint(activeActivityCount) + " — " + activity.Name + "\n\n"
 		activeActivityCount++
 	}
 	return activityText

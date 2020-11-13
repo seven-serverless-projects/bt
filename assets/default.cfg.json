@@ -5,31 +5,31 @@
     "project_id": "Replace with the Project ID for your Firebase project",
     "activities": [{
             "id": "TBD",
-            "name": "Sleeping",
+            "name": "🛌 Sleeping",
             "color": "08b4ff",
             "active": true
         },
         {
             "id": "TBD",
-            "name": "Reading",
+            "name": "📖 Reading",
             "color": "abfff7",
             "active": true
         },
         {
             "id": "TBD",
-            "name": "Writing",
+            "name": "✏️  Writing",
             "color": "ff7bee",
             "active": true
         },
         {
             "id": "TBD",
-            "name": "Gaming",
+            "name": "🎮 Gaming",
             "color": "ffc885",
             "active": true
         },
         {
             "id": "TBD",
-            "name": "Day Job",
+            "name": "💼 Day Job",
             "color": "fffbaa",
             "active": true
         }
