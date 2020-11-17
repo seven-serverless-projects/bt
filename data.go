@@ -7,6 +7,8 @@ import (
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go" // https://godoc.org/firebase.google.com/go
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const dateFormat = "2006-01-02"
@@ -40,14 +42,34 @@ func firebaseConnect() (*firebase.App, context.Context, *firestore.Client) {
 	return app, ctx, client
 }
 
-// TODO for a different day than today
-// TODO retrieve from Firestore rather than blank
-//
-func retrieveData() Day {
+// Return an initialized day for the specified date.
+// Load the document from Firestore for the specified day.
+// Include any stored timeslice activities for the day in the data.
+func loadData(forDay time.Time) Day {
+	timeSliceMap := make(map[string]interface{})
 	day := Day{}
-	day.date = time.Now().Format(dateFormat)
+	day.date = forDay.Format(dateFormat)
+	doc, err := bt.firestoreClient.
+		Collection("users").
+		Doc(bt.config.UserID).
+		Collection("days").
+		Doc(day.date).
+		Get(bt.firebaseContext)
+	if (err != nil && status.Code(err) != codes.NotFound) || doc == nil {
+		fmt.Printf("\nUnable to read data for: %s\n", day.date)
+		panic(err)
+	} else {
+		timeSliceMap = doc.Data()
+	}
 	for i, slice := range day.timeSlices {
 		slice.slice = i
+		loadedData := timeSliceMap[fmt.Sprint(i)]
+		if loadedData != nil { // the loaded time slice map is sparse
+			activityID := loadedData.(map[string]interface{})["activity_id"]
+			if activityID != nil {
+				slice.activityID = activityID.(string) // Type conversion
+			}
+		}
 		day.timeSlices[i] = slice
 	}
 	return day

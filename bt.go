@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go" // https://godoc.org/firebase.google.com/go
@@ -23,7 +24,7 @@ var bt BT
 func main() {
 	bt.config = getConfig()
 	bt.firebaseApp, bt.firebaseContext, bt.firestoreClient = firebaseConnect()
-	bt.currentDay = retrieveData()
+	bt.currentDay = loadData(time.Now())
 	bt.ui = initUI()
 	startUI() // Blocking
 	shutdown()
