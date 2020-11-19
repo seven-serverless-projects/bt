@@ -6,28 +6,41 @@ import (
 	"strings"
 )
 
-// Parse text input from the user, which is request to quit, or a time entry.
+// Parse text input from the user, and do the requested action
 func parseInput() {
 	input := strings.ToLower(ui.commandInput.GetText())
-	if input == "q" || input == "quit" {
+	switch input {
+	case "q", "quit":
 		ui.app.Stop()
-	} else if strings.HasPrefix(input, "t") {
-		timeSlices, timeRange, activity, err := parseTimeEntry(input)
-		if !err {
-			if timeRange[0] > 0 {
-				timeSlices = expandRange(timeRange[0], timeRange[1])
+	case "+":
+		timeForward()
+	case "-":
+		timeBackward()
+	case "n", "next":
+		dayForward()
+	case "p", "prior":
+		dayBackward()
+	case "t", "today", "r", "refresh", "reset":
+		dayTodayTimeNow()
+	case "y", "yesterday":
+		dayYesterday()
+	default:
+		if strings.HasPrefix(input, "t") {
+			timeSlices, timeRange, activity, err := parseTimeEntry(input)
+			if !err {
+				if timeRange[0] > 0 {
+					timeSlices = expandRange(timeRange[0], timeRange[1])
+				}
+				assignTime(timeSlices, activity)
 			}
-			assignTime(timeSlices, activity)
 		}
-		resetInput()
-	} else {
-		resetInput()
 	}
+	resetInput()
 }
 
 // Parse the time entry input from a user as integers.
 // Time entry input associates a time slice, multiple time slices,
-// or a range of time slices with a single activity
+// or a range of time slices with a single activity.
 func parseTimeEntry(entry string) ([]int, [2]int, int, bool) {
 	timeSlices := []int{}
 	var timeRange [2]int

@@ -76,30 +76,33 @@ func loadData(forDay time.Time) Day {
 }
 
 // Return the configured number of time slices for the specified day,
-// starting at the current time and working backwards in time (unless
+// starting at the specified time and working backwards in time (unless
 // that takes us to midnight, in which case, use midnight as the earliest
 // time slice).
-func currentTimeSlicesFor(day Day) []TimeSlice {
-	now := time.Now()
-
-	// time slices between now and the top of the current hour
-	nowMinutes := now.Minute()
-	thisHourSlices := (nowMinutes / 15) + 1
+func timeSlicesForTime(day Day, start time.Time) []TimeSlice {
+	// time slices between the start time and the top of the hour
+	startMinutes := start.Minute()
+	startHourSlices := (startMinutes / 15) + 1
 
 	// time slices before the top of the hour
-	priorHourSlices := timeSlicesDisplayed - thisHourSlices
+	priorHourSlices := timeSlicesDisplayed - startHourSlices
 
 	// time slice index for this hour
-	nowHour := now.Hour()
-	startingTimeSlice := (nowHour * 4) - priorHourSlices
+	startHour := start.Hour()
+	startingTimeSlice := (startHour * 4) - priorHourSlices
 
-	// Adjust for being near the the start and end of the day
+	return timeSlicesForIndex(day, startingTimeSlice)
+}
+
+// Return the configured number of time slices for the specified day,
+// starting at the specified index.
+func timeSlicesForIndex(day Day, startingTimeSlice int) []TimeSlice {
+	// Adjust for being near the start and end of the day
 	if startingTimeSlice < 0 {
 		startingTimeSlice = 0
 	} else if startingTimeSlice > (96 - timeSlicesDisplayed) {
 		startingTimeSlice = 96 - timeSlicesDisplayed
 	}
-
 	// select and return the time slices from day
 	return day.timeSlices[startingTimeSlice:(startingTimeSlice + timeSlicesDisplayed)]
 }
