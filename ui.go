@@ -179,7 +179,12 @@ func activityText() string {
 	activeActivityCount := 1
 	activityText := ""
 	for _, activity := range activeActivities() {
-		activityText += "a" + fmt.Sprint(activeActivityCount) + " — " + activity.Name + "\n\n"
+		activityText += "a" + fmt.Sprint(activeActivityCount) + " — " + activity.Name
+		timeInActivity := timeInActivityText(activity.ID)
+		if timeInActivity != "" {
+			activityText += " — " + timeInActivity
+		}
+		activityText += "\n\n"
 		activeActivityCount++
 	}
 	return activityText
@@ -209,6 +214,39 @@ func timeDisplayFor(timeSlice TimeSlice) string {
 	return fmt.Sprintf("%d:%s - %d:%s %s", startHour, startMinuteString, endHour, endMinuteString, "")
 }
 
+// Sum any timeslices spent doing the specified activity during the displayed day
+// into human readable text e.g. 2h 15m
+// Return a blank string if there's no timeslices for the activity.
+func timeInActivityText(activityID string) string {
+	timeInActivity := ""
+	timeSliceCount := 0
+	for _, timeslice := range bt.currentDay.timeSlices {
+		if timeslice.activityID == activityID {
+			timeSliceCount++
+		}
+	}
+	if timeSliceCount > 0 {
+		hours := timeSliceCount / 4
+		minuteSlices := timeSliceCount % 4
+		if hours > 0 {
+			timeInActivity = fmt.Sprintf("%dh ", hours)
+		}
+		if minuteSlices > 0 {
+			var minutes int
+			switch minuteSlices {
+			case 1:
+				minutes = 15
+			case 2:
+				minutes = 30
+			case 3:
+				minutes = 45
+			}
+			timeInActivity += fmt.Sprintf("%dm", minutes)
+		}
+	}
+	return timeInActivity
+}
+
 // The user finished their input, if they finished it with enter, attempt to parse it, otherwise reset the input
 func inputComplete(key tcell.Key) {
 	if key == tcell.KeyEnter {
@@ -236,8 +274,9 @@ func assignTime(timeSliceIndexes []int, activityIndex int) {
 		bt.currentDay.timeSlices = timeSlices
 	}
 
-	// refresh the timeslices display in the ui
+	// refresh the timeslices and activity display in the ui
 	ui.timeSliceList.SetText(timeSliceText())
+	ui.activityList.SetText(activityText())
 
 	// persist the updated timeslices
 	// TODO status message
@@ -301,7 +340,8 @@ func resetForDay(day time.Time) {
 	bt.currentDay = loadData(day)
 	// Reset the UI, using the same starting time slice as is currently shown
 	ui.currentTimeSlices = timeSlicesForIndex(bt.currentDay, ui.currentTimeSlices[0].slice)
-	ui.timeSliceList.SetText(timeSliceText())
 	ui.header.SetText(day.Format(formatUS))
+	ui.timeSliceList.SetText(timeSliceText())
+	ui.activityList.SetText(activityText())
 	// TODO account for any activities that are on the day but not active
 }
