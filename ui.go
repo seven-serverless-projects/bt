@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"regexp"
 	"time"
 
 	"github.com/gdamore/tcell/v2" // https://github.com/gdamore/tcell
@@ -14,49 +13,6 @@ const (
 	bgColor             = tcell.ColorDarkBlue
 	formatUS            = "Monday, January 2, 2006"
 )
-
-/*
-Regular expression that can parse valid time entries from the user.
-
-t# references the time slices displayed in the UI by their numbered index.
-
-a# references activities displayed in the UI by their numbered index.
-
-One or more time slices, or a range of time slices, are associated with one activity.
-
-Valid Examples:
-t1 a1
-t1a1
-t3, t6 a2
-t3,t6 a2
-t3 t6 a2
-t3t6 a2
-t3t6a2
-t7-t10 a5
-t7-10 a5
-t7-t10a5
-t7-10a5
-
-Detailed breakdown of the regex string:
-
-^ - the start
-
-(?:t(?P<sliceIndex>[0-9]+),?\\s?)* - a single t# or a comma, space, or non-delimitted sequence of them
-
-| - or this other way of specifiying time
-
-t(?P<range1>[0-9]+)-t(?P<range2>[0-9]+) - a range t#=t#
-
-\s optional white space between time and activity
-
-a(?P<activity>[0-9]+) - activity in the form of a#
-
-$ - the end
-*/
-const timeEntryRegExString = "^((?:t(?P<sliceIndex>[0-9]+),?\\s?)*|t(?P<range1>[0-9]+)-t?(?P<range2>[0-9]+))\\s*a(?P<activity>[0-9]+)$"
-
-// Subset of the full parsing regex, with just a single t# or a comma, space, or non-delimitted sequence of them
-const timeSlicesRegExString = "^(t([0-9])+,?\\s?)+$"
 
 // UI - the BubbleTimer terminal user interface
 type UI struct {
@@ -70,7 +26,6 @@ type UI struct {
 }
 
 var ui UI
-var timeEntryRegExp, timeSlicesRegExp *regexp.Regexp
 
 func initUI() UI {
 	ui.app = tview.NewApplication()
@@ -89,11 +44,6 @@ func startUI() {
 	if err := ui.app.Run(); err != nil {
 		panic(err)
 	}
-}
-
-func initRegExp() {
-	timeEntryRegExp = regexp.MustCompile(timeEntryRegExString)
-	timeSlicesRegExp = regexp.MustCompile(timeSlicesRegExString)
 }
 
 func initHeader() {
@@ -282,6 +232,10 @@ func assignTime(timeSliceIndexes []int, activityIndex int) {
 	// TODO status message
 	persist()
 	// TODO status message
+}
+
+func unassignTime(timeSliceIndexes []int) {
+	fmt.Printf("Unassign: %v", timeSliceIndexes)
 }
 
 // Increment startingTimeSlice by page size (adjusting for end of day) and rerender

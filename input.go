@@ -6,6 +6,90 @@ import (
 	"strings"
 )
 
+/*
+Regular expression that can parse valid time entries from the user.
+
+t# references the time slices displayed in the UI by their numbered index.
+
+a# references activities displayed in the UI by their numbered index.
+
+One or more time slices, or a range of time slices, are associated with one activity.
+
+Valid Examples:
+t1 a1
+t1a1
+t3, t6 a2
+t3,t6 a2
+t3 t6 a2
+t3t6 a2
+t3t6a2
+t7-t10 a5
+t7-10 a5
+t7-t10a5
+t7-10a5
+
+Detailed breakdown of the regex string:
+
+^ - the start
+
+(?:t(?P<sliceIndex>[0-9]+),?\\s?)* - a single t# or a comma, space, or non-delimitted sequence of them
+
+| - or this other way of specifiying time
+
+t(?P<range1>[0-9]+)-t(?P<range2>[0-9]+) - a range t#=t#
+
+\s optional white space between time and activity
+
+a(?P<activity>[0-9]+) - activity in the form of a#
+
+$ - the end
+*/
+const timeEntryRegExString = "^((?:t(?P<sliceIndex>[0-9]+),?\\s?)*|t(?P<range1>[0-9]+)-t?(?P<range2>[0-9]+))\\s*a(?P<activity>[0-9]+)$"
+
+// Subset of the full parsing regex, with just a single t# or a comma, space, or non-delimitted sequence of them
+const timeSlicesRegExString = "^(t([0-9])+,?\\s?)+$"
+
+/*
+Regular expression that can parse valid time unassignments from the user.
+
+t# references the time slices displayed in the UI by their numbered index.
+
+One or more time slices, or a range of time slices, are associated with one activity.
+
+Valid Examples:
+u t1
+u t3, t6
+u t3,t6
+u t3 t6
+u t3t6
+ut3t6
+u t7-t10
+ut7-10
+
+Detailed breakdown of the regex string:
+
+^ - the start
+
+u\\s* - the literal letter u and optional white space
+
+(?:t(?P<sliceIndex>[0-9]+),?\\s?)* - a single t# or a comma, space, or non-delimitted sequence of them
+
+| - or this other way of specifiying time
+
+t(?P<range1>[0-9]+)-t(?P<range2>[0-9]+) - a range t#=t#
+
+$ - the end
+*/
+const unassignRegExString = "^u\\s*((?:t(?P<sliceIndex>[0-9]+),?\\s?)*|t(?P<range1>[0-9]+)-t?(?P<range2>[0-9]+))$"
+
+var timeEntryRegExp, timeSlicesRegExp, unassignRegExp *regexp.Regexp
+
+func initRegExp() {
+	timeEntryRegExp = regexp.MustCompile(timeEntryRegExString)
+	timeSlicesRegExp = regexp.MustCompile(timeSlicesRegExString)
+	unassignRegExp = regexp.MustCompile(unassignRegExString)
+}
+
 // Parse text input from the user, and do the requested action
 func parseInput() {
 	input := strings.ToLower(ui.commandInput.GetText())
@@ -33,9 +117,36 @@ func parseInput() {
 				}
 				assignTime(timeSlices, activity)
 			}
+		} else if strings.HasPrefix(input, "u") {
+			timeSlices, timeRange, err := parseUnassignment(input)
+			if !err {
+				if timeRange[0] > 0 {
+					timeSlices = expandRange(timeRange[0], timeRange[1])
+				}
+				unassignTime(timeSlices)
+			}
 		}
 	}
 	resetInput()
+}
+
+// Parse the unassignment input from a user as integers.
+// Time entry unassignment disassociates a time slice, multiple time slices,
+// or a range of time slices from any assigned activity.
+func parseUnassignment(entry string) ([]int, [2]int, bool) {
+	timeSlices := []int{}
+	var timeRange [2]int
+	err := false
+	matches := unassignRegExp.FindStringSubmatch(entry)
+	if len(matches) < 5 ||
+		!validRange(matches[3], matches[4]) {
+		err = true // silly user!
+	} else {
+		timeSlices = parseTimeSlices(matches[1])
+		timeRange[0], _ = strconv.Atoi(matches[3])
+		timeRange[1], _ = strconv.Atoi(matches[4])
+	}
+	return timeSlices, timeRange, err
 }
 
 // Parse the time entry input from a user as integers.
