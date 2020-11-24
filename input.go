@@ -139,7 +139,8 @@ func parseUnassignment(entry string) ([]int, [2]int, bool) {
 	err := false
 	matches := unassignRegExp.FindStringSubmatch(entry)
 	if len(matches) < 5 ||
-		!validRange(matches[3], matches[4]) {
+		!validRange(matches[3], matches[4]) ||
+		(matches[1] == matches[3] && matches[3] == matches[4] && matches[4] == "") {
 		err = true // silly user!
 	} else {
 		timeSlices = parseTimeSlices(matches[1])

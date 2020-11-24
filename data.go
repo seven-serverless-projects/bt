@@ -49,6 +49,7 @@ func loadData(forDay time.Time) Day {
 	timeSliceMap := make(map[string]interface{})
 	day := Day{}
 	day.date = forDay.Format(dateFormat)
+	// Load the document for user and day, if it exists
 	doc, err := bt.firestoreClient.
 		Collection("users").
 		Doc(bt.config.UserID).
@@ -56,11 +57,13 @@ func loadData(forDay time.Time) Day {
 		Doc(day.date).
 		Get(bt.firebaseContext)
 	if (err != nil && status.Code(err) != codes.NotFound) || doc == nil {
+		// Error other than the document not existing
 		fmt.Printf("\nUnable to read data for: %s\n", day.date)
 		panic(err)
 	} else {
-		timeSliceMap = doc.Data()
+		timeSliceMap = doc.Data() // Read the time slice data from the document
 	}
+	// for each time slice in the day check if there's a matching loaded time slice
 	for i, slice := range day.timeSlices {
 		slice.slice = i
 		loadedData := timeSliceMap[fmt.Sprint(i)]
@@ -132,10 +135,11 @@ func activeActivities() []Activity {
 }
 
 // Persist the timeslices for the current day being shown in the UI
-func persist() (bool, string) {
+func persistData() (bool, string) {
 	success := true
 	errorMessage := ""
 
+	// Save the document for user and day, if it exists
 	_, err := bt.firestoreClient.
 		Collection("users").
 		Doc(bt.config.UserID).
@@ -146,6 +150,7 @@ func persist() (bool, string) {
 	if err != nil {
 		success = false
 		errorMessage = err.Error()
+		// TODO status message
 		fmt.Printf("Firestore write - Error: %s", errorMessage)
 	}
 	return success, errorMessage

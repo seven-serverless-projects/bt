@@ -124,7 +124,6 @@ func timeSliceText() string {
 }
 
 // Return a string suitable for use in the UI with a return delimitted entry for each activity we are displaying
-// TODO Right now this just uses active activities, but the specified day may have older, inactive activities as well
 func activityText() string {
 	activeActivityCount := 1
 	activityText := ""
@@ -201,7 +200,7 @@ func timeInActivityText(activityID string) string {
 func inputComplete(key tcell.Key) {
 	if key == tcell.KeyEnter {
 		parseInput()
-	} else {
+	} else { // likely the ESC key
 		resetInput()
 	}
 }
@@ -212,7 +211,7 @@ func assignTime(timeSliceIndexes []int, activityIndex int) {
 	// Get the activity
 	activity := activeActivities()[activityIndex-1]
 
-	// update the day's timeslices with the activity
+	// update the day's specified timeslices with the specified activity
 	for _, timeSliceIndex := range timeSliceIndexes {
 		timeSlice := ui.currentTimeSlices[timeSliceIndex-1]
 		timeSlice.activityID = activity.ID // set the activity
@@ -224,18 +223,40 @@ func assignTime(timeSliceIndexes []int, activityIndex int) {
 		bt.currentDay.timeSlices = timeSlices
 	}
 
+	syncUI()
+	persist()
+}
+
+// Unassign activity from the specified time slices and persist the update
+func unassignTime(timeSliceIndexes []int) {
+	// update the day's specified timeslices with no activity
+	for _, timeSliceIndex := range timeSliceIndexes {
+		timeSlice := ui.currentTimeSlices[timeSliceIndex-1]
+		timeSlice.activityID = "" // set the activity
+		// Replace the time slice in the UI's data
+		ui.currentTimeSlices[timeSliceIndex-1] = timeSlice
+		// Replace the time slice in the current day's data
+		timeSlices := bt.currentDay.timeSlices
+		timeSlices[timeSlice.slice] = timeSlice
+		bt.currentDay.timeSlices = timeSlices
+	}
+
+	syncUI()
+	persist()
+}
+
+//
+func syncUI() {
 	// refresh the timeslices and activity display in the ui
 	ui.timeSliceList.SetText(timeSliceText())
 	ui.activityList.SetText(activityText())
-
-	// persist the updated timeslices
-	// TODO status message
-	persist()
-	// TODO status message
 }
 
-func unassignTime(timeSliceIndexes []int) {
-	fmt.Printf("Unassign: %v", timeSliceIndexes)
+// Persist the currently displayed day's timeslices
+func persist() {
+	// TODO status message
+	persistData()
+	// TODO status message
 }
 
 // Increment startingTimeSlice by page size (adjusting for end of day) and rerender
@@ -243,7 +264,7 @@ func timeForward() {
 	// start with the last of the current time slices
 	newStartingTimeSlice := ui.currentTimeSlices[len(ui.currentTimeSlices)-1]
 	ui.currentTimeSlices = timeSlicesForIndex(bt.currentDay, newStartingTimeSlice.slice)
-	ui.timeSliceList.SetText(timeSliceText())
+	syncUI()
 }
 
 // Decrement startingTimeSlice by page size (adjusting for start of day) and rerender
@@ -251,7 +272,7 @@ func timeBackward() {
 	// end with the first of the current time slices
 	newEndingTimeSlice := ui.currentTimeSlices[0]
 	ui.currentTimeSlices = timeSlicesForIndex(bt.currentDay, newEndingTimeSlice.slice-timeSlicesDisplayed+1)
-	ui.timeSliceList.SetText(timeSliceText())
+	syncUI()
 }
 
 // Parse the current day, increment it by one, and reset the UI
@@ -261,7 +282,7 @@ func dayForward() {
 		fmt.Println("Unable to parse current day: " + bt.currentDay.date)
 		panic(err)
 	}
-	forward := current.Add(-time.Hour * 24)
+	forward := current.Add(time.Hour * 24)
 	resetForDay(forward)
 }
 
@@ -276,6 +297,7 @@ func dayBackward() {
 	resetForDay(back)
 }
 
+// Set the current day to today and reset the UI
 func dayTodayTimeNow() {
 	now := time.Now()
 	// Set the timeslices to end at the current time
@@ -284,18 +306,19 @@ func dayTodayTimeNow() {
 	resetForDay(now)
 }
 
+// Set the current day to yesterday and reset the UI
 func dayYesterday() {
 	now := time.Now()
 	yesterday := now.Add(-time.Hour * 24)
 	resetForDay(yesterday)
 }
 
+// Given a specific timestamp, load the stored data for that day and reset the UI
 func resetForDay(day time.Time) {
 	bt.currentDay = loadData(day)
 	// Reset the UI, using the same starting time slice as is currently shown
 	ui.currentTimeSlices = timeSlicesForIndex(bt.currentDay, ui.currentTimeSlices[0].slice)
 	ui.header.SetText(day.Format(formatUS))
-	ui.timeSliceList.SetText(timeSliceText())
-	ui.activityList.SetText(activityText())
-	// TODO account for any activities that are on the day but not active
+	syncUI()
+	// TODO need to account for any activities that are on the day but not active?
 }
